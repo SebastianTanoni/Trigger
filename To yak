@@ -1,0 +1,80 @@
+ 
+//When a Team is completely emptied, a particular research should be given to all players. 
+//This research is a requirement for certain Second Chances to be researched.
+ 
+ library EnableSecondChances initializer OnInit requires Team, Persons 
+
+    globals
+        private integer RESEARCH_DELAY = 180
+    endglobals
+
+    private function EnableResearchForAll takes integer researchId returns nothing
+        local integer i = 0
+        
+        loop
+        exitwhen i > MAX_PLAYERS
+            call SetPlayerTechResearched(Player(i), researchId, 1)   
+            set i = i + 1
+        endloop
+    endfunction
+
+    private function DisableResearchForAll takes integer researchId returns nothing
+        local integer i = 0
+        
+        loop
+        exitwhen i > MAX_PLAYERS
+            call SetPlayerTechResearched(Player(i), researchId, 0)   
+            set i = i + 1
+        endloop
+    endfunction
+    
+    private function Actions takes nothing returns nothing
+        local Team triggerTeam = GetTriggerTeam()
+        if triggerTeam.size == 0 then
+           call TriggerSleepAction(RESEARCH_DELAY)
+           call PlaySoundBJ( gg_snd_NewTournament )
+           if triggerTeam.id == TEAM_SCOURGE then
+              call EnableResearchForAll('http') 
+              call DisplayTextToForce( GetPlayersAll(), "North Alliance second chances are now available" )
+              call TriggerSleepAction(RESEARCH_DELAY)
+              call DisableResearchForAll('http')
+           elseif triggerTeam.id == TEAM_NORTH_ALLIANCE then
+              call EnableResearchForAll('http')
+              call DisplayTextToForce( GetPlayersAll(), "North Alliance second chances are now available" )
+              call TriggerSleepAction(RESEARCH_DELAY)
+              call DisableResearchForAll('http')
+           elseif triggerTeam.id == TEAM_HORDE then
+              call EnableResearchForAll('R05C')
+              call DisplayTextToForce( GetPlayersAll(), "Kalimdor second chances are now available" )
+              call StartTimerBJ( udg_cthuntimer, false, RESEARCH_DELAY)
+              call CreateTimerDialogBJ( udg_cthuntimer, "TRIGSTR_14728" )
+              set udg_Cthuntimerwindow = GetLastCreatedTimerDialogBJ()
+              call TriggerSleepAction(RESEARCH_DELAY)
+              call DisableResearchForAll('R05C')
+              call DestroyTimerDialogBJ( udg_Cthuntimerwindow )
+           elseif triggerTeam.id == TEAM_NIGHT_ELVES then
+              call EnableResearchForAll('R05C')
+              call DisplayTextToForce( GetPlayersAll(), "Kalimdor second chances are now available" )
+              call TriggerSleepAction(RESEARCH_DELAY)
+              call DisableResearchForAll('R05C')
+           elseif triggerTeam.id == TEAM_SOUTH_ALLIANCE then  
+              call EnableResearchForAll('R05D')
+              call DisplayTextToForce( GetPlayersAll(), "South Alliance second chances are now available" )
+              call TriggerSleepAction(RESEARCH_DELAY)
+              call DisableResearchForAll('R05D')
+           elseif triggerTeam.id == TEAM_FEL_HORDE then
+              call EnableResearchForAll('R05D')
+              call DisplayTextToForce( GetPlayersAll(), "South Alliance second chances are now available" )
+              call TriggerSleepAction(RESEARCH_DELAY)
+              call DisableResearchForAll('R05D')
+           endif  
+        endif
+    endfunction
+
+    private function OnInit takes nothing returns nothing
+        local trigger trig = CreateTrigger()
+        call OnTeamSizeChange.register(trig)
+        call TriggerAddAction(trig, function Actions)
+    endfunction
+    
+endlibrary
